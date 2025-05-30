@@ -2,7 +2,7 @@ import pygame
 import tracemalloc
 from core import get_delta_time
 
-tracemalloc.start()  # Do this once, here is fine
+tracemalloc.start()
 
 class Debugger:
     def __init__(self, smoothing=0.9, font_size=18):

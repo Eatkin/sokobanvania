@@ -6,7 +6,7 @@ class Sprite(Component):
     """
     Component that represents a sprite for an entity.
     """
-    def __init__(self, sprite_info: SpriteInfo):
+    def __init__(self, sprite_info: SpriteInfo, components: list[Component]|None=None):
         super().__init__()
         self.sprite_info = sprite_info
         self.visible = True
@@ -16,6 +16,9 @@ class Sprite(Component):
         else:
             self.image = self.image.convert()
         self.rect = self.image.get_rect()
+        if components:
+            for component in components:
+                component.attach(self)
 
     @property
     def width(self):
@@ -48,14 +51,35 @@ class Sprite(Component):
         entity.components['sprite'] = self
 
     def draw(self, screen, position):
-        """
-        Draw the sprite on the screen at the given position.
-
-        Args:
-            screen: The screen to draw the sprite on.
-            position: The position to draw the sprite at.
-        """
         if not self.visible:
             return
+
+        image_to_draw = self.image
+
+        if hasattr(self, 'xflip') and self.xflip:
+            if not self._last_xflip or self._flipped_image is None:
+                self._flipped_image = pygame.transform.flip(self.image, True, False)
+            image_to_draw = self._flipped_image
+            self._last_xflip = True
+        else:
+            self._last_xflip = False
+
         self.rect.topleft = (position.x, position.y)
-        screen.blit(self.image, self.rect)
+
+        screen.blit(image_to_draw, self.rect)
+
+
+
+# Sprite Components to extend functionality
+class Xflip(Component):
+    """Component to handle horizontal flipping of a sprite."""
+    def attach(self, entity):
+        """
+        Attach the component to an entity.
+
+        Args:
+            entity: The entity to attach the component to.
+        """
+        entity.xflip = False
+        entity._flipped_image = None
+        entity._last_xflip = False

@@ -1,9 +1,8 @@
-from utils import sign
 from core.entity import Entity
 from core.input import get_input, KeyAction
 from core.component.position import Position
 from core.component.velocity import Velocity
-from core.component.sprite import Sprite
+from core.component.sprite import Sprite, Xflip
 from core import get_delta_time, GRID_SIZE
 from common.sprites import SPRITES
 
@@ -13,7 +12,7 @@ class Player(Entity):
         super().__init__()
         self.add_component(Position(x, y))
         self.add_component(Velocity(0, 0))
-        self.add_component(Sprite(SPRITES['player']['ball_dude']))
+        self.add_component(Sprite(SPRITES['player']['ball_dude'], components=[Xflip()]))
         self.speed = GRID_SIZE
         self.moving = False
         self.target_pos = (x, y)
@@ -51,6 +50,12 @@ class Player(Entity):
                 self.velocity.yspeed = 0
                 self.moving = False
                 self.target_pos = None
+
+            # Flip sprite if moving left
+            if self.velocity.xspeed < 0:
+                self.sprite.xflip = True
+            elif self.velocity.xspeed > 0 or abs(self.velocity.yspeed) > 0:
+                self.sprite.xflip = False
 
     def _reached_target(self):
         if self.velocity.xspeed > 0 and self.position.x >= self.target_pos[0]:
