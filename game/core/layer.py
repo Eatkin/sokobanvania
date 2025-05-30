@@ -10,6 +10,7 @@ class Layer:
         """
         self.name = name
         self.entities = []
+        self.scene = None
 
     def update(self):
         """
