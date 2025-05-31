@@ -1,6 +1,7 @@
 import pygame
 from core.component.component import Component
 from common.sprites import SpriteInfo
+from core import get_alpha
 
 class Sprite(Component):
     """
@@ -64,7 +65,10 @@ class Sprite(Component):
         else:
             self._last_xflip = False
 
-        self.rect.topleft = (position.x, position.y)
+        alpha = get_alpha()
+        x_draw = position.xprevious * (1 - alpha) + position.x * alpha
+        y_draw = position.yprevious * (1 - alpha) + position.y * alpha
+        self.rect.topleft = (x_draw, y_draw)
 
         screen.blit(image_to_draw, self.rect)
 

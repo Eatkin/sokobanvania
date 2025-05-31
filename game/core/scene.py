@@ -1,3 +1,4 @@
+from core import is_physics_tick
 from core.layer import Layer
 
 class Scene:
@@ -14,6 +15,12 @@ class Scene:
 
     def update(self):
         """Update all layers in the scene."""
+        # Fixed updates
+        while is_physics_tick():
+            for entity in self.entities:
+                entity.fixed_update()
+
+        # Then other updates
         for layer in self.layers.values():
             layer.update()
 

@@ -23,5 +23,9 @@ SPRITES = {
             path="assets/tiles/floor_tile.png",
             alpha_channel=False
         ),
+        "wall_tile": SpriteInfo(
+            path="assets/tiles/wall.png",
+            alpha_channel=False
+        )
     }
 }

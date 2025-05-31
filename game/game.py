@@ -1,11 +1,13 @@
 import atexit
 import pygame
-from core import update_delta_time
+from core import update_timing
 from core.input import get_input_handler
 from core.debugger import Debugger
-from entities.player import Player
 from entities.background_tiler import BackgroundTiler
 from core.scene import BaseScene
+
+from entities.player import Player
+from entities.block import Block
 
 @atexit.register
 def cleanup():
@@ -40,6 +42,12 @@ class Game:
         self.current_scene = BaseScene()
         player = Player(32, 32)
         self.current_scene.add_entity_to_layer(player, "game")
+
+        # Add a few blocks
+        for coords in zip([64, 96, 128, 160], [32, 64, 96, 128]):
+            block = Block(*coords)
+            self.current_scene.add_entity_to_layer(block, "game")
+
         tiler = BackgroundTiler(width=self.current_scene.width, height=self.current_scene.height)
         self.current_scene.add_entity_to_layer(tiler, "background")
 
@@ -48,6 +56,6 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-            update_delta_time()
+            update_timing()
             self.update()
             self.render()

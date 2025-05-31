@@ -8,6 +8,8 @@ class Position(Component):
         super().__init__()
         self.x = x
         self.y = y
+        self.xprevious = x
+        self.yprevious = y
 
     def attach(self, entity):
         """
