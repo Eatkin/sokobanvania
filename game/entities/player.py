@@ -1,9 +1,11 @@
+from math import floor
 from core.entity import Entity, Solid
 from core.component.position import Position
 from core.component.velocity import Velocity
 from core.component.sprite import Sprite, Xflip
 from core.component.input import InputParser
 from core.component.collision import CollisionBox
+from core.component.inventory import Inventory
 from core import GRID_SIZE, PHYSICS_TICK_TIME
 from common.sprites import SPRITES
 from utils import sign
@@ -17,9 +19,10 @@ class Player(Entity):
         self.add_component(Sprite(SPRITES['player']['ball_dude'], components=[Xflip()]))
         self.add_component(InputParser())
         self.add_component(CollisionBox())
-        self.speed = GRID_SIZE
+        self.add_component(Inventory())
+        self.speed = GRID_SIZE * 2
         self.moving = False
-        self.target_pos = (x, y)
+        self.target_pos = None
 
     def update(self):
         # Update input state
@@ -38,50 +41,30 @@ class Player(Entity):
                 self.moving = True
 
     def fixed_update(self):
-        # ALWAYS set previous position before moving
+        has_moved = self.position.x != self.position.xprevious or self.position.y != self.position.yprevious
         self.position.xprevious = self.position.x
         self.position.yprevious = self.position.y
-
         dt = PHYSICS_TICK_TIME
+
         if self.moving:
-            # Flip sprite if moving left
-            if self.velocity.xspeed < 0:
-                self.sprite.xflip = True
-            else:
-                self.sprite.xflip = False
-
-            # Collision checking
-            # TODO: For loop to move upto 1px at a time for precise movement
-            next_x = self.position.x + sign(self.velocity.xspeed)
-            next_y = self.position.y + sign(self.velocity.yspeed)
-            if self.velocity.xspeed != 0 and not self.collision_box.place_meeting(next_x, self.position.y, Solid):
-                self.position.x = next_x
-                self.velocity.yspeed = 0  # cancel vertical speed if horizontal move successful
-            else:
-                self.velocity.xspeed = 0
-
-            if not self.collision_box.place_meeting(self.position.x, next_y, Solid):
-                self.position.y = next_y
-            else:
-                self.velocity.yspeed = 0
-
-            if self.velocity.xspeed != 0 or self.velocity.yspeed != 0:
-                vx = self.velocity.xspeed * dt
-                vy = self.velocity.yspeed * dt
-                self.position.x += vx
-                self.position.y += vy
-
-                # Check if we've reached or passed the target
-                if self._reached_target():
-                    self.position.x, self.position.y = self.target_pos
-                    self.velocity.xspeed = 0
-                    self.velocity.yspeed = 0
-                    self.moving = False
-                    self.target_pos = None
-            else:
-                # If not moving, reset target position
-                self.target_pos = (self.position.x, self.position.y)
+            self.update_sprite_direction()
+            self.move_axis('x', dt)
+            self.move_axis('y', dt)
+            self.check_target_reached()
+            if self.velocity.xspeed == 0 and self.velocity.yspeed == 0:
                 self.moving = False
+                self.target_pos = None
+                # BUG IN THE MAKING: This doesn't actually check grid snap, it just checks the player has moved and then stopped
+                # Realistically there shouldn't be any movement that doesn't snap to grid unless we die or something
+                if has_moved:
+                    self.on_grid_snap()
+
+        else:
+            self.target_pos = None
+            self.moving = False
+
+    def on_grid_snap(self):
+        print("Snapped to grid")
 
     def _reached_target(self):
         if self.velocity.xspeed > 0 and self.position.x >= self.target_pos[0]:
@@ -93,3 +76,52 @@ class Player(Entity):
         if self.velocity.yspeed < 0 and self.position.y <= self.target_pos[1]:
             return True
         return False
+
+    def update_sprite_direction(self):
+        self.sprite.xflip = self.velocity.xspeed < 0
+
+    def move_axis(self, axis: str, dt: float):
+        speed = getattr(self.velocity, f"{axis}speed")
+        if speed == 0:
+            return
+
+        pos = getattr(self.position, axis)
+        next_pos = pos + speed * dt
+        steps = floor(abs(next_pos - pos))
+        residual = abs(next_pos - pos) - steps
+
+        for i in range(1, steps+1):
+            step = pos + sign(speed) * i
+            if axis == 'x':
+                blocked = self.collision_box.place_meeting(step, self.position.y, Solid)
+            else:
+                blocked = self.collision_box.place_meeting(self.position.x, step, Solid)
+
+            if not blocked:
+                setattr(self.position, axis, step)
+            else:
+                setattr(self.velocity, f"{axis}speed", 0)
+                residual = 0
+                break
+
+        if residual > 0:
+            step = getattr(self.position, axis) + sign(speed) * residual
+            # We need to check min 1 pixel otherwise we get stuck
+            check = getattr(self.position, axis) + sign(speed)
+            if axis == 'x':
+                blocked = self.collision_box.place_meeting(check, self.position.y, Solid)
+            else:
+                blocked = self.collision_box.place_meeting(self.position.x, check, Solid)
+
+            if not blocked:
+                setattr(self.position, axis, step)
+            else:
+                setattr(self.velocity, f"{axis}speed", 0)
+
+    def check_target_reached(self):
+        if self._reached_target():
+            self.position.x, self.position.y = self.target_pos
+            self.velocity.xspeed = 0
+            self.velocity.yspeed = 0
+            self.moving = False
+            self.target_pos = None
