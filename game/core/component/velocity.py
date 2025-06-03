@@ -1,10 +1,10 @@
 from core.component.component import Component
 
 class Velocity(Component):
-    def __init__(self, xspeed=0, yspeed=0):
+    def __init__(self, xspeed, yspeed):
         super().__init__()
-        self.xspeed = xspeed
-        self.yspeed = yspeed
+        self.xspeed = 0
+        self.yspeed = 0
 
     def attach(self, entity):
         """

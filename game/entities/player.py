@@ -24,7 +24,6 @@ class Player(Entity):
         self.add_component(Inventory())
         self.speed = GRID_SIZE * 2
         self.moving = False
-        self.target_pos = None
 
     def update(self):
         # Update input state
@@ -34,16 +33,30 @@ class Player(Entity):
             dx = self.input.hinput
             dy = self.input.vinput
             if dx or dy:
-                self.velocity.xspeed = dx * self.speed
-                self.velocity.yspeed = dy * self.speed
-                self.target_pos = (
-                    self.position.x + dx * GRID_SIZE,
-                    self.position.y + dy * GRID_SIZE
-                )
-                self.moving = True
+                tx = self.position.x + dx * GRID_SIZE
+                ty = self.position.y + dy * GRID_SIZE
+                blocking_classes = self.collision_box.collides_with
+                # Prioritise horizontal movement
+                if abs(dx) > 0 and not self.scene.is_blocked(tx, self.position.y, blocking_classes):
+                    # Set our targets
+                    self.position.target = (tx, self.position.y)
+                    self.velocity.xspeed = dx * self.speed
+                elif abs(dy) > 0 and not self.scene.is_blocked(self.position.x, ty, blocking_classes):
+                    # Set our targets
+                    self.position.target = (self.position.x, ty)
+                    self.velocity.yspeed = dy * self.speed
+
+                if self.position.target:
+                    self.moving = True
+                    self.propose_move()
+
+    def propose_move(self):
+        # Set occupancy
+        self.scene.vacate(self.position.x, self.position.y, self)
+        self.scene.occupy(self.position.target[0], self.position.target[1], self)
 
     def fixed_update(self):
-        has_moved = self.position.x != self.position.xprevious or self.position.y != self.position.yprevious
+        # Update previous position
         self.position.xprevious = self.position.x
         self.position.yprevious = self.position.y
         dt = PHYSICS_TICK_TIME
@@ -52,20 +65,12 @@ class Player(Entity):
             self.update_sprite_direction()
             self.move_axis('x', dt)
             self.move_axis('y', dt)
-            self.check_target_reached()
-            if self.velocity.xspeed == 0 and self.velocity.yspeed == 0:
-                self.moving = False
-                self.target_pos = None
-                # BUG IN THE MAKING: This doesn't actually check grid snap, it just checks the player has moved and then stopped
-                # Realistically there shouldn't be any movement that doesn't snap to grid unless we die or something
-                if has_moved:
-                    self.on_grid_snap()
-
-        else:
-            self.target_pos = None
-            self.moving = False
+            if self.check_target_reached():
+                self.on_grid_snap()
+                print(self.scene.occupancy_map)
 
     def on_grid_snap(self):
+        print("We have SNAPPED to the grid")
         # Check for collision with pickups
         collisions = [PickUp, LockBlock]
         items = self.collision_box.instance_meeting_all(self.position.x, self.position.y, collisions)
@@ -95,13 +100,13 @@ class Player(Entity):
             self.collision_box.collides_with.remove(to_remove.pop())
 
     def _reached_target(self):
-        if self.velocity.xspeed > 0 and self.position.x >= self.target_pos[0]:
+        if self.velocity.xspeed > 0 and self.position.x >= self.position.target[0]:
             return True
-        if self.velocity.xspeed < 0 and self.position.x <= self.target_pos[0]:
+        if self.velocity.xspeed < 0 and self.position.x <= self.position.target[0]:
             return True
-        if self.velocity.yspeed > 0 and self.position.y >= self.target_pos[1]:
+        if self.velocity.yspeed > 0 and self.position.y >= self.position.target[1]:
             return True
-        if self.velocity.yspeed < 0 and self.position.y <= self.target_pos[1]:
+        if self.velocity.yspeed < 0 and self.position.y <= self.position.target[1]:
             return True
         return False
 
@@ -115,43 +120,14 @@ class Player(Entity):
 
         pos = getattr(self.position, axis)
         next_pos = pos + speed * dt
-        steps = floor(abs(next_pos - pos))
-        residual = abs(next_pos - pos) - steps
-
-        collides_with = self.collision_box.collides_with
-
-        for i in range(1, steps+1):
-            step = pos + sign(speed) * i
-            if axis == 'x':
-                blocked = self.collision_box.place_meeting(step, self.position.y, collides_with)
-            else:
-                blocked = self.collision_box.place_meeting(self.position.x, step, collides_with)
-
-            if not blocked:
-                setattr(self.position, axis, step)
-            else:
-                setattr(self.velocity, f"{axis}speed", 0)
-                residual = 0
-                break
-
-        if residual > 0:
-            step = getattr(self.position, axis) + sign(speed) * residual
-            # We need to check min 1 pixel otherwise we get stuck
-            check = getattr(self.position, axis) + sign(speed)
-            if axis == 'x':
-                blocked = self.collision_box.place_meeting(check, self.position.y, collides_with)
-            else:
-                blocked = self.collision_box.place_meeting(self.position.x, check, collides_with)
-
-            if not blocked:
-                setattr(self.position, axis, step)
-            else:
-                setattr(self.velocity, f"{axis}speed", 0)
+        setattr(self.position, axis, next_pos)
 
     def check_target_reached(self):
         if self._reached_target():
-            self.position.x, self.position.y = self.target_pos
+            self.position.x, self.position.y = self.position.target
             self.velocity.xspeed = 0
             self.velocity.yspeed = 0
             self.moving = False
-            self.target_pos = None
+            self.position.target = None
+            return True
+        return False

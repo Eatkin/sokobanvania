@@ -1,3 +1,4 @@
+from collections import defaultdict
 from core import is_physics_tick
 from core.layer import Layer
 
@@ -7,6 +8,7 @@ class Scene:
         self.width = width
         self.height = height
         self.entities = []
+        self.occupancy_map = defaultdict(list)
 
     def add_layer(self, layer):
         """Add a layer to the scene."""
@@ -38,12 +40,25 @@ class Scene:
         entity.scene = self
         self.entities.append(entity)
 
+        # Add to the occupancy map if the entity has a position
+        if hasattr(entity, 'position'):
+            x, y = entity.position.x, entity.position.y
+            self.occupy(x, y, entity)
+
     def remove_entity(self, entity, destroy_entity=True):
         layer = entity.layer
         layer.remove_entity(entity)
         entity.layer = None
         entity.scene = None
         self.entities.remove(entity)
+        # Also de-occupy the position if it exists
+        if hasattr(entity, 'position'):
+            # Occupancy is at proposed target position if it exists, otherwise at current position
+            if entity.position.target is not None:
+                x, y = entity.position.target
+            else:
+                x, y = entity.position.x, entity.position.y
+            self.vacate(x, y, entity)
         if destroy_entity:
             entity.delete()
 
@@ -54,6 +69,36 @@ class Scene:
 
         return [e for e in self.entities if isinstance(e, cls)]
 
+    def get_occupants(self, x, y):
+        """Gets occupants of a specific position in the grid."""
+        return self.occupancy_map.get((x, y), [])
+
+    def occupy(self, x, y, entity):
+        """Occupy a position in the grid with an entity."""
+        if entity not in self.occupancy_map[(x, y)]:
+            self.occupancy_map[(x, y)].append(entity)
+
+    def vacate(self, x, y, entity):
+        """Remove an entity from a specific position in the grid."""
+        try:
+            self.occupancy_map[(x, y)].remove(entity)
+            if not self.occupancy_map[(x, y)]:
+                del self.occupancy_map[(x, y)]
+        except (ValueError, KeyError):
+            pass
+
+    def is_blocked(self, x, y, blocking_classes=None):
+        """Return True if any occupant at (x, y) matches one of the blocking classes."""
+        occupants = self.get_occupants(x, y)
+
+        if blocking_classes is None:
+            return bool(occupants)  # Any presence is a block
+
+        for entity in occupants:
+            if isinstance(entity, tuple(blocking_classes)):
+                return True
+
+        return False
 
 class BaseScene(Scene):
     def __init__(self, width=800, height=600):

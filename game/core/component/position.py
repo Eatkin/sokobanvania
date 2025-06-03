@@ -10,6 +10,7 @@ class Position(Component):
         self.y = y
         self.xprevious = x
         self.yprevious = y
+        self.target = None
 
     def attach(self, entity):
         """
