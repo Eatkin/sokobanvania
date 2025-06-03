@@ -1,6 +1,7 @@
 from math import floor
-from core.entity import Entity, Solid
+from core.entity import Entity
 from entities.pickup import PickUp
+from entities.blocks import Solid, LockBlock
 from core.component.position import Position
 from core.component.velocity import Velocity
 from core.component.sprite import Sprite, Xflip
@@ -66,11 +67,32 @@ class Player(Entity):
 
     def on_grid_snap(self):
         # Check for collision with pickups
-        item = self.collision_box.instance_meeting(self.position.x, self.position.y, PickUp)
-        if item is not None:
-            self.inventory.add(item.name)
-            print(f"Picked up item: {item.name}")
-            item.destroy()
+        collisions = [PickUp, LockBlock]
+        items = self.collision_box.instance_meeting_all(self.position.x, self.position.y, collisions)
+        for item in items:
+            if isinstance(item, PickUp):
+                self.inventory.add(item.name)
+                print(f"Picked up item: {item.name}")
+                item.destroy()
+            if isinstance(item, LockBlock):
+                unlocks_with = item.item_required
+                if self.inventory.has(unlocks_with):
+                    self.inventory.remove(unlocks_with)
+                    item.destroy()
+                    print(f"Unlocked {item.__class__.__name__} with {unlocks_with}")
+
+    def on_inventory_change(self):
+        """Update collision rules based on inventory changes."""
+        self.collision_box.reset_collision_rules()
+        to_remove = []
+        for cls in self.collision_box.collides_with:
+            if issubclass(cls, LockBlock) and self.inventory.has(cls.item_required):
+                to_remove.append(cls)
+                print(f"{cls.__name__} no longer solid thanks to {cls.item_required} in inventory")
+
+        # Remove the items that are marked for removal
+        while to_remove:
+            self.collision_box.collides_with.remove(to_remove.pop())
 
     def _reached_target(self):
         if self.velocity.xspeed > 0 and self.position.x >= self.target_pos[0]:
@@ -96,12 +118,14 @@ class Player(Entity):
         steps = floor(abs(next_pos - pos))
         residual = abs(next_pos - pos) - steps
 
+        collides_with = self.collision_box.collides_with
+
         for i in range(1, steps+1):
             step = pos + sign(speed) * i
             if axis == 'x':
-                blocked = self.collision_box.place_meeting(step, self.position.y, Solid)
+                blocked = self.collision_box.place_meeting(step, self.position.y, collides_with)
             else:
-                blocked = self.collision_box.place_meeting(self.position.x, step, Solid)
+                blocked = self.collision_box.place_meeting(self.position.x, step, collides_with)
 
             if not blocked:
                 setattr(self.position, axis, step)
@@ -115,9 +139,9 @@ class Player(Entity):
             # We need to check min 1 pixel otherwise we get stuck
             check = getattr(self.position, axis) + sign(speed)
             if axis == 'x':
-                blocked = self.collision_box.place_meeting(check, self.position.y, Solid)
+                blocked = self.collision_box.place_meeting(check, self.position.y, collides_with)
             else:
-                blocked = self.collision_box.place_meeting(self.position.x, check, Solid)
+                blocked = self.collision_box.place_meeting(self.position.x, check, collides_with)
 
             if not blocked:
                 setattr(self.position, axis, step)

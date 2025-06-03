@@ -3,12 +3,12 @@ import pygame
 from core import update_timing
 from core.input import get_input_handler
 from core.debugger import Debugger
-from entities.background_tiler import BackgroundTiler
 from core.scene import BaseScene
 
 from entities.player import Player
-from entities.block import Block
+from entities.blocks import Block, GreenLockBlock
 from entities.pickup import PickUp
+from entities.background_tiler import BackgroundTiler
 
 @atexit.register
 def cleanup():
@@ -42,7 +42,7 @@ class Game:
     def run(self):
         self.current_scene = BaseScene()
         player = Player(32, 32)
-        self.current_scene.add_entity_to_layer(player, "game")
+        self.current_scene.add_entity_to_layer(player, "player")
 
         # Add a few blocks
         for coords in zip([64, 96, 128, 160], [32, 64, 96, 128]):
@@ -52,6 +52,10 @@ class Game:
         # Add a green key
         key = PickUp(32, 128, "green_key")
         self.current_scene.add_entity_to_layer(key, "items")
+
+        # Add a green lock block
+        green_lock_block = GreenLockBlock(96, 128)
+        self.current_scene.add_entity_to_layer(green_lock_block, "game")
 
         tiler = BackgroundTiler(width=self.current_scene.width, height=self.current_scene.height)
         self.current_scene.add_entity_to_layer(tiler, "background")

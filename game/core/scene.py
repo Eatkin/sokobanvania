@@ -63,6 +63,7 @@ class BaseScene(Scene):
             Layer("background"),
             Layer("items"),
             Layer("game"),
+            Layer("player"),
             Layer("ui")
         ]
         for layer in layers:

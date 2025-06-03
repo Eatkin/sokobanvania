@@ -4,6 +4,7 @@ from core.component.component import Component
 class CollisionBox(Component):
     def attach(self, entity):
         self.entity = entity
+        self.reset_collision_rules()
         entity.collision_box = self
 
     @property
@@ -31,3 +32,11 @@ class CollisionBox(Component):
 
     def instance_meeting(self, x, y, cls, entities=None, ignore_self=True):
         return next(self._collision_at(x, y, cls, entities, ignore_self), None)
+
+    def instance_meeting_all(self, x, y, cls, entities=None, ignore_self=True):
+        return list(self._collision_at(x, y, cls, entities, ignore_self))
+
+    def reset_collision_rules(self):
+        from common.constants import DEFAULT_COLLISION_RULES
+        entity_class_name = self.entity.__class__.__name__.lower()
+        self.collides_with = DEFAULT_COLLISION_RULES.get(entity_class_name, DEFAULT_COLLISION_RULES["default"])

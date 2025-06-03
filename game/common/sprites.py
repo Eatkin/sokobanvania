@@ -32,5 +32,12 @@ SPRITES = {
         "green_key": SpriteInfo(
             path="assets/sprites/items/green_key.png",
         )
+    },
+    "lock_blocks": {
+        # These reference the item required to unlock them
+        "green_key": SpriteInfo(
+            path="assets/tiles/green_lock_block.png",
+            alpha_channel=False
+        ),
     }
 }
