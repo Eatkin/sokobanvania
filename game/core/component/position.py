@@ -21,3 +21,14 @@ class Position(Component):
         """
         entity.position = self
         entity.components['position'] = self
+
+    def get_occupied_tile(self):
+        """
+        Get the tile coordinates occupied by this position.
+
+        Returns:
+            tuple: (tile_x, tile_y) coordinates of the occupied tile.
+        """
+        if self.target:
+            return self.target
+        return self.x, self.y

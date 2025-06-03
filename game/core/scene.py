@@ -54,10 +54,7 @@ class Scene:
         # Also de-occupy the position if it exists
         if hasattr(entity, 'position'):
             # Occupancy is at proposed target position if it exists, otherwise at current position
-            if entity.position.target is not None:
-                x, y = entity.position.target
-            else:
-                x, y = entity.position.x, entity.position.y
+            x, y = entity.position.get_occupied_tile()
             self.vacate(x, y, entity)
         if destroy_entity:
             entity.delete()
