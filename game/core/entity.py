@@ -32,6 +32,13 @@ class Entity:
 
     def destroy(self):
         """
+        Destroy the entity, removing it from the scene and cleaning up.
+        """
+        if self.scene:
+            self.scene.remove_entity(self)
+
+    def delete(self):
+        """
         Destructor for behaviour on dereferencing the entity.
         """
         pass

@@ -38,16 +38,14 @@ class Scene:
         entity.scene = self
         self.entities.append(entity)
 
-    def remove_entity_from_layer(self, entity, layer_name, destroy_entity=True):
-        if layer_name not in self.layers:
-            raise ValueError(f"Layer '{layer_name}' not found in the scene.")
-        layer = self.layers[layer_name]
+    def remove_entity(self, entity, destroy_entity=True):
+        layer = entity.layer
         layer.remove_entity(entity)
         entity.layer = None
         entity.scene = None
         self.entities.remove(entity)
         if destroy_entity:
-            entity.destroy()
+            entity.delete()
 
     def get_entities_by_class(self, cls):
         """Get all entities of a specific class (or classes) in the scene."""
@@ -63,6 +61,7 @@ class BaseScene(Scene):
         # Create default layers
         layers = [
             Layer("background"),
+            Layer("items"),
             Layer("game"),
             Layer("ui")
         ]

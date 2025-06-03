@@ -27,5 +27,10 @@ SPRITES = {
             path="assets/tiles/wall.png",
             alpha_channel=False
         )
+    },
+    "items": {
+        "green_key": SpriteInfo(
+            path="assets/sprites/items/green_key.png",
+        )
     }
 }

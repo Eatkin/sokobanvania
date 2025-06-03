@@ -1,5 +1,6 @@
 from math import floor
 from core.entity import Entity, Solid
+from entities.pickup import PickUp
 from core.component.position import Position
 from core.component.velocity import Velocity
 from core.component.sprite import Sprite, Xflip
@@ -64,7 +65,12 @@ class Player(Entity):
             self.moving = False
 
     def on_grid_snap(self):
-        print("Snapped to grid")
+        # Check for collision with pickups
+        item = self.collision_box.instance_meeting(self.position.x, self.position.y, PickUp)
+        if item is not None:
+            self.inventory.add(item.name)
+            print(f"Picked up item: {item.name}")
+            item.destroy()
 
     def _reached_target(self):
         if self.velocity.xspeed > 0 and self.position.x >= self.target_pos[0]:

@@ -8,6 +8,7 @@ from core.scene import BaseScene
 
 from entities.player import Player
 from entities.block import Block
+from entities.pickup import PickUp
 
 @atexit.register
 def cleanup():
@@ -47,6 +48,10 @@ class Game:
         for coords in zip([64, 96, 128, 160], [32, 64, 96, 128]):
             block = Block(*coords)
             self.current_scene.add_entity_to_layer(block, "game")
+
+        # Add a green key
+        key = PickUp(32, 128, "green_key")
+        self.current_scene.add_entity_to_layer(key, "items")
 
         tiler = BackgroundTiler(width=self.current_scene.width, height=self.current_scene.height)
         self.current_scene.add_entity_to_layer(tiler, "background")
