@@ -10,6 +10,8 @@ from entities.blocks import Block, GreenLockBlock
 from entities.pickup import PickUp
 from entities.background_tiler import BackgroundTiler
 
+from core.level_parser import get_level
+
 @atexit.register
 def cleanup():
     pygame.quit()
@@ -40,22 +42,23 @@ class Game:
         self.screen.fill((0, 0, 0))
 
     def run(self):
-        self.current_scene = BaseScene()
-        player = Player(32, 32)
-        self.current_scene.add_entity_to_layer(player, "player")
+        self.current_scene = get_level("assets/levels/lesson1.lvl")
+        # self.current_scene = BaseScene()
+        # player = Player(32, 32)
+        # self.current_scene.add_entity_to_layer(player, "player")
 
-        # Add a few blocks
-        for coords in zip([64, 96, 128, 160], [32, 64, 96, 128]):
-            block = Block(*coords)
-            self.current_scene.add_entity_to_layer(block, "game")
+        # # Add a few blocks
+        # for coords in zip([64, 96, 128, 160], [32, 64, 96, 128]):
+        #     block = Block(*coords)
+        #     self.current_scene.add_entity_to_layer(block, "game")
 
-        # Add a green key
-        key = PickUp(32, 128, "green_key")
-        self.current_scene.add_entity_to_layer(key, "items")
+        # # Add a green key
+        # key = PickUp(32, 128, "green_key")
+        # self.current_scene.add_entity_to_layer(key, "items")
 
-        # Add a green lock block
-        green_lock_block = GreenLockBlock(96, 128)
-        self.current_scene.add_entity_to_layer(green_lock_block, "game")
+        # # Add a green lock block
+        # green_lock_block = GreenLockBlock(96, 128)
+        # self.current_scene.add_entity_to_layer(green_lock_block, "game")
 
         tiler = BackgroundTiler(width=self.current_scene.width, height=self.current_scene.height)
         self.current_scene.add_entity_to_layer(tiler, "background")

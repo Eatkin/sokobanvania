@@ -4,7 +4,6 @@ _last_time = time.time()
 _accumulator = 0.0
 DELTA_TIME = 0.0
 
-GRID_SIZE = 32
 FIXED_FPS = 60
 PHYSICS_TICK_TIME = 1.0 / FIXED_FPS
 

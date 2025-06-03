@@ -8,6 +8,10 @@ class Entity:
         # General updates every frame
         pass
 
+    def staging_update(self):
+        # Prepare updates for the fixed update phase
+        pass
+
     def fixed_update(self):
         # Fixed updates every physics tick (e.g., 60 FPS)
         pass

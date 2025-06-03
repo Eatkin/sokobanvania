@@ -31,12 +31,36 @@ SPRITES = {
     "items": {
         "green_key": SpriteInfo(
             path="assets/sprites/items/green_key.png",
-        )
+        ),
+        "yellow_key": SpriteInfo(
+            path="assets/sprites/items/yellow_key.png",
+        ),
+        "blue_key": SpriteInfo(
+            path="assets/sprites/items/blue_key.png",
+        ),
+        "red_key": SpriteInfo(
+            path="assets/sprites/items/red_key.png",
+        ),
+        "chip": SpriteInfo(
+            path="assets/sprites/items/chip.png",
+        ),
     },
     "lock_blocks": {
         # These reference the item required to unlock them
         "green_key": SpriteInfo(
             path="assets/tiles/green_lock_block.png",
+            alpha_channel=False
+        ),
+        "red_key": SpriteInfo(
+            path="assets/tiles/red_lock_block.png",
+            alpha_channel=False
+        ),
+        "blue_key": SpriteInfo(
+            path="assets/tiles/blue_lock_block.png",
+            alpha_channel=False
+        ),
+        "yellow_key": SpriteInfo(
+            path="assets/tiles/yellow_lock_block.png",
             alpha_channel=False
         ),
     }

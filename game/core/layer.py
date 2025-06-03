@@ -14,11 +14,9 @@ class Layer:
 
     def update(self):
         """
-        Update all entities in the layer.
         This method should be called every frame to update the state of the layer.
         """
-        for entity in self.entities:
-            entity.update()
+        pass
 
     def render(self, screen):
         """

@@ -38,3 +38,18 @@ class GreenLockBlock(LockBlock):
     item_required = 'green_key'
     def __init__(self, x, y):
         super().__init__(x, y, 'green_key')
+
+class RedLockBlock(LockBlock):
+    item_required = 'red_key'
+    def __init__(self, x, y):
+        super().__init__(x, y, 'red_key')
+
+class BlueLockBlock(LockBlock):
+    item_required = 'blue_key'
+    def __init__(self, x, y):
+        super().__init__(x, y, 'blue_key')
+
+class YellowLockBlock(LockBlock):
+    item_required = 'yellow_key'
+    def __init__(self, x, y):
+        super().__init__(x, y, 'yellow_key')

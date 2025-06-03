@@ -1,15 +1,15 @@
-from math import floor
 from core.entity import Entity
 from entities.pickup import PickUp
-from entities.blocks import Solid, LockBlock
+from entities.blocks import LockBlock
 from core.component.position import Position
 from core.component.velocity import Velocity
 from core.component.sprite import Sprite, Xflip
 from core.component.input import InputParser
 from core.component.collision import CollisionBox
 from core.component.inventory import Inventory
-from core import GRID_SIZE, PHYSICS_TICK_TIME
+from core import PHYSICS_TICK_TIME
 from common.sprites import SPRITES
+from common.constants import GRID_SIZE
 from utils import sign
 
 class Player(Entity):
@@ -29,7 +29,10 @@ class Player(Entity):
         # Update input state
         self.input.update()
 
-    def propose_move(self):
+    def staging_update(self):
+        if self.moving:
+            return
+
         dx = self.input.hinput
         dy = self.input.vinput
         if dx or dy:
@@ -53,9 +56,9 @@ class Player(Entity):
                 self.scene.occupy(self.position.target[0], self.position.target[1], self)
 
     def fixed_update(self):
-        if not self.moving:
-            self.propose_move()
-
+        # TODO: The movement itself should be in a second pass
+        # Basically we want to propose all movement and then move, because otherwise we might end up with some weird
+        # Shit happening especially like, pushing multiple blocks in a row
         # Update previous position
         self.position.xprevious = self.position.x
         self.position.yprevious = self.position.y

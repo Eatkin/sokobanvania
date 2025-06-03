@@ -17,14 +17,19 @@ class Scene:
 
     def update(self):
         """Update all layers in the scene."""
+        # Main updates
+        for entity in self.entities:
+            entity.update()
+
         # Fixed updates
         while is_physics_tick():
+            # We stage for movement and then apply it in fixed update
+            for entity in self.entities:
+                entity.staging_update()
+
             for entity in self.entities:
                 entity.fixed_update()
 
-        # Then other updates
-        for layer in self.layers.values():
-            layer.update()
 
     def render(self, screen):
         """Render all layers in the scene."""
