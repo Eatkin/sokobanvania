@@ -90,17 +90,26 @@ class Scene:
             pass
 
     def is_blocked(self, x, y, blocking_classes=None):
-        """Return True if any occupant at (x, y) matches one of the blocking classes."""
+        """
+        Check if a position (x, y) is blocked by any entity of the specified blocking classes.
+        Args:
+            x (int): The x-coordinate in grid units.
+            y (int): The y-coordinate in grid units.
+            blocking_classes (tuple, optional): A tuple of classes that block movement. If None, any occupant blocks.
+        Returns:
+            list: A list of entities blocking the position, or an empty list if not blocked.
+        """
         occupants = self.get_occupants(x, y)
 
         if blocking_classes is None:
-            return bool(occupants)  # Any presence is a block
+            return occupants  # Any presence is a block
 
+        res = []
         for entity in occupants:
             if isinstance(entity, tuple(blocking_classes)):
-                return True
+                res.append(entity)
 
-        return False
+        return res if res else []
 
 class BaseScene(Scene):
     def __init__(self, width=800, height=600):

@@ -1,12 +1,12 @@
 from core.entity import Entity
 from entities.pickup import PickUp
 from entities.blocks import LockBlock
-from core.component.position import Position
-from core.component.velocity import Velocity
+from core.component.movement import Movement
 from core.component.sprite import Sprite, Xflip
 from core.component.input import InputParser
 from core.component.collision import CollisionBox
 from core.component.inventory import Inventory
+from core.component.properties import Properties
 from core import PHYSICS_TICK_TIME
 from common.sprites import SPRITES
 from common.constants import GRID_SIZE
@@ -14,14 +14,13 @@ from utils import sign
 
 class Player(Entity):
     def __init__(self, x, y):
-        # Blue square
         super().__init__()
-        self.add_component(Position(x, y))
-        self.add_component(Velocity(0, 0))
+        self.add_component(Movement(x, y))
         self.add_component(Sprite(SPRITES['player']['ball_dude'], components=[Xflip()]))
         self.add_component(InputParser())
         self.add_component(CollisionBox())
         self.add_component(Inventory())
+        self.add_component(Properties())
         self.speed = GRID_SIZE * 2
         self.moving = False
 
@@ -35,28 +34,14 @@ class Player(Entity):
 
         dx = self.input.hinput
         dy = self.input.vinput
-        if dx or dy:
-            tx = self.position.x + dx * GRID_SIZE
-            ty = self.position.y + dy * GRID_SIZE
-            blocking_classes = self.collision_box.collides_with
-            # Prioritise horizontal movement
-            if abs(dx) > 0 and not self.scene.is_blocked(tx, self.position.y, blocking_classes):
-                # Set our targets
-                self.position.target = (tx, self.position.y)
-                self.velocity.xspeed = dx * self.speed
-            elif abs(dy) > 0 and not self.scene.is_blocked(self.position.x, ty, blocking_classes):
-                # Set our targets
-                self.position.target = (self.position.x, ty)
-                self.velocity.yspeed = dy * self.speed
-
-            if self.position.target:
-                self.moving = True
-                # Set occupancy
-                self.scene.vacate(self.position.x, self.position.y, self)
-                self.scene.occupy(self.position.target[0], self.position.target[1], self)
+        if dx:
+            success = self.movement.attempt_move(dx, 0, self)
+            if success:
+                dy = 0
+        if dy:
+            success = self.movement.attempt_move(0, dy, self)
 
     def fixed_update(self):
-        # TODO: The movement itself should be in a second pass
         # Basically we want to propose all movement and then move, because otherwise we might end up with some weird
         # Shit happening especially like, pushing multiple blocks in a row
         # Update previous position
@@ -106,17 +91,6 @@ class Player(Entity):
         while to_remove:
             self.collision_box.collides_with.remove(to_remove.pop())
 
-    def _reached_target(self):
-        if sign(self.velocity.xspeed) == 1 and self.position.x >= self.position.target[0]:
-            return True
-        if sign(self.velocity.xspeed) == -1 and self.position.x <= self.position.target[0]:
-            return True
-        if sign(self.velocity.yspeed) == 1 and self.position.y >= self.position.target[1]:
-            return True
-        if sign(self.velocity.yspeed) == -1 and self.position.y <= self.position.target[1]:
-            return True
-        return False
-
     def update_sprite_direction(self):
         self.sprite.xflip = self.velocity.xspeed < 0
 
@@ -136,5 +110,16 @@ class Player(Entity):
             self.velocity.yspeed = 0
             self.moving = False
             self.position.target = None
+            return True
+        return False
+
+    def _reached_target(self):
+        if sign(self.velocity.xspeed) == 1 and self.position.x >= self.position.target[0]:
+            return True
+        if sign(self.velocity.xspeed) == -1 and self.position.x <= self.position.target[0]:
+            return True
+        if sign(self.velocity.yspeed) == 1 and self.position.y >= self.position.target[1]:
+            return True
+        if sign(self.velocity.yspeed) == -1 and self.position.y <= self.position.target[1]:
             return True
         return False

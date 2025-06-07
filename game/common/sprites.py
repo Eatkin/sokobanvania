@@ -63,5 +63,11 @@ SPRITES = {
             path="assets/tiles/yellow_lock_block.png",
             alpha_channel=False
         ),
+    },
+    "pushables": {
+        "dirt_block": SpriteInfo(
+            path="assets/tiles/dirt_block.png",
+            alpha_channel=False
+        ),
     }
 }

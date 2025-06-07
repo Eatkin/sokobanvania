@@ -5,6 +5,7 @@ class CollisionBox(Component):
     def attach(self, entity):
         self.entity = entity
         self.reset_collision_rules()
+        self.reset_pushable_classes()
         entity.collision_box = self
 
     @property
@@ -37,6 +38,11 @@ class CollisionBox(Component):
         return list(self._collision_at(x, y, cls, entities, ignore_self))
 
     def reset_collision_rules(self):
-        from common.constants import DEFAULT_COLLISION_RULES
+        from common.config import DEFAULT_COLLISION_RULES
         entity_class_name = self.entity.__class__.__name__.lower()
-        self.collides_with = DEFAULT_COLLISION_RULES.get(entity_class_name, DEFAULT_COLLISION_RULES["default"])
+        self.collides_with = DEFAULT_COLLISION_RULES.get(entity_class_name, DEFAULT_COLLISION_RULES["default"]).copy()
+
+    def reset_pushable_classes(self):
+        from common.config import DEFAULT_PUSH_RULES
+        entity_class_name = self.entity.__class__.__name__.lower()
+        self.pushable_classes = DEFAULT_PUSH_RULES.get(entity_class_name, DEFAULT_PUSH_RULES["default"])
