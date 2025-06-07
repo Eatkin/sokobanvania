@@ -42,6 +42,7 @@ class Movement(Component):
         if any(isinstance(b, tuple(blocking_classes)) for b in blockers):
             return False
 
+        # OPTIONAL: Set a entity.can_push method?
         # Check if there's any pushable classes using isinstance
         pushable = next((b for b in blockers if isinstance(b, tuple(pushable_classes))), None)
 

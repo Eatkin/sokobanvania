@@ -5,7 +5,7 @@ from core.component.movement import Movement
 from core.component.sprite import Sprite
 from core.component.collision import CollisionBox
 from common.sprites import SPRITES
-from common.constants import GRID_SIZE
+from common.constants import BASE_SPEED
 from utils import sign
 
 class Solid(Entity):
@@ -66,8 +66,9 @@ class DirtBlock(Entity):
         self.add_component(Sprite(sprite_info))
         self.add_component(CollisionBox())
         self.moving = False
-        self.speed = GRID_SIZE * 2
+        self.speed = BASE_SPEED
 
+    # DON'T REPEAT YOURSELF DON'T REPEAT YOURSELF DON'T REPEAT YOURSELF DON'T REPEAT YOURSELF DON'T REPEAT YOURSELF DON'T REPEAT YOURSELF DON'T REPEAT YOURSELF DON'T REPEAT YOURSELF DON'T REPEAT YOURSELF DON'T REPEAT YOURSELF
     def fixed_update(self):
         self.position.xprevious = self.position.x
         self.position.yprevious = self.position.y

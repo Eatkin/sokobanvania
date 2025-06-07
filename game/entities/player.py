@@ -9,7 +9,7 @@ from core.component.inventory import Inventory
 from core.component.properties import Properties
 from core import PHYSICS_TICK_TIME
 from common.sprites import SPRITES
-from common.constants import GRID_SIZE
+from common.constants import BASE_SPEED
 from utils import sign
 
 class Player(Entity):
@@ -21,7 +21,7 @@ class Player(Entity):
         self.add_component(CollisionBox())
         self.add_component(Inventory())
         self.add_component(Properties())
-        self.speed = GRID_SIZE * 2
+        self.speed = BASE_SPEED
         self.moving = False
 
     def update(self):

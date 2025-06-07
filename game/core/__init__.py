@@ -1,6 +1,6 @@
-import time
+import pygame
 
-_last_time = time.time()
+_last_time = pygame.time.get_ticks()
 _accumulator = 0.0
 DELTA_TIME = 0.0
 
@@ -10,8 +10,8 @@ PHYSICS_TICK_TIME = 1.0 / FIXED_FPS
 def update_timing():
     global DELTA_TIME, _last_time, _accumulator
 
-    now = time.time()
-    frame_time = now - _last_time
+    now = pygame.time.get_ticks()
+    frame_time = (now - _last_time) / 1000.0
     _last_time = now
 
     # Clamp to avoid spiral of death
