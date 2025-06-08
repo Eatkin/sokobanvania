@@ -4,6 +4,7 @@ from entities.pickup import PickUp
 from entities.blocks import Block, GreenLockBlock, RedLockBlock, BlueLockBlock, YellowLockBlock, DirtBlock
 from common.constants import GRID_SIZE
 from core.scene import BaseScene
+from core.layer import LayerType
 
 legend = {
     'P': lambda x, y: Player(x * GRID_SIZE, y * GRID_SIZE),
@@ -24,19 +25,19 @@ legend = {
 }
 
 layers = {
-    'P': 'player',
-    'C': 'items',
-    '#': 'game',
-    '.': None,
-    'y': 'items',
-    'g': 'items',
-    'r': 'items',
-    'b': 'items',
-    'Y': 'game',
-    'G': 'game',
-    'R': 'game',
-    'B': 'game',
-    'D': 'game',
+    'P': LayerType.GAME,
+    'C': LayerType.ITEMS,
+    '#': LayerType.GAME,
+    '.': LayerType.BACKGROUND,
+    'y': LayerType.ITEMS,
+    'g': LayerType.ITEMS,
+    'r': LayerType.ITEMS,
+    'b': LayerType.ITEMS,
+    'Y': LayerType.GAME,
+    'G': LayerType.GAME,
+    'R': LayerType.GAME,
+    'B': LayerType.GAME,
+    'D': LayerType.GAME,
 }
 
 def get_level(path):

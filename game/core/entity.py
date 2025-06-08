@@ -8,7 +8,10 @@ class Entity:
 
     def update(self):
         # General updates every frame
-        pass
+        if hasattr(self, 'sprite') and hasattr(self, 'position'):
+            self.sprite.update(self.position)
+        if hasattr(self, 'input'):
+            self.input.update()
 
     def staging_update(self):
         # Prepare updates for the fixed update phase
@@ -30,11 +33,6 @@ class Entity:
 
     def on_grid_snap(self):
         pass
-
-    def draw(self, screen):
-        if hasattr(self, 'sprite') and hasattr(self, 'position'):
-            self.sprite.draw(screen, self.position)
-
 
     def add_component(self, component):
         """

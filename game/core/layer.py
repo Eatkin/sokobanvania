@@ -1,3 +1,14 @@
+from enum import Enum
+
+class LayerType(Enum):
+    """
+    Enum representing different types of layers in a game engine.
+    """
+    BACKGROUND = 0
+    ITEMS = 1
+    GAME = 2
+    UI = 3
+
 class Layer:
     """
     A class representing a layer in a game engine.

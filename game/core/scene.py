@@ -1,19 +1,17 @@
+import pygame
 from collections import defaultdict
 from core import is_physics_tick
-from core.layer import Layer
+from core.layer import Layer, LayerType
+from entities.background_tiler import BackgroundTiler
 
 class Scene:
     def __init__(self, width=800, height=600):
         self.layers = {}
+        self.render_group = pygame.sprite.LayeredUpdates()
         self.width = width
         self.height = height
         self.entities = []
         self.occupancy_map = defaultdict(list)
-
-    def add_layer(self, layer):
-        """Add a layer to the scene."""
-        self.layers[layer.name] = layer
-        layer.scene = self
 
     def update(self):
         """Update all layers in the scene."""
@@ -31,17 +29,11 @@ class Scene:
                 entity.fixed_update()
 
 
-    def render(self, screen):
-        """Render all layers in the scene."""
-        for layer in self.layers.values():
-            layer.render(screen)
-
-    def add_entity_to_layer(self, entity, layer_name):
-        if layer_name not in self.layers:
-            raise ValueError(f"Layer '{layer_name}' not found in the scene.")
-        layer = self.layers[layer_name]
-        layer.add_entity(entity)
-        entity.layer = layer
+    def add_entity_to_layer(self, entity, layer_ref):
+        if hasattr(entity, 'sprite'):
+            entity.sprite._layer = layer_ref.value
+            self.render_group.add(entity.sprite)
+            entity.sprite.render_group = self.render_group
         entity.scene = self
         self.entities.append(entity)
 
@@ -51,9 +43,9 @@ class Scene:
             self.occupy(x, y, entity)
 
     def remove_entity(self, entity, destroy_entity=True):
-        layer = entity.layer
-        layer.remove_entity(entity)
-        entity.layer = None
+        if hasattr(entity, 'sprite'):
+            # Remove the sprite from the render group
+            entity.sprite.kill()
         entity.scene = None
         self.entities.remove(entity)
         # Also de-occupy the position if it exists
@@ -114,13 +106,5 @@ class Scene:
 class BaseScene(Scene):
     def __init__(self, width=800, height=600):
         super().__init__(width=width, height=height)
-        # Create default layers
-        layers = [
-            Layer("background"),
-            Layer("items"),
-            Layer("game"),
-            Layer("player"),
-            Layer("ui")
-        ]
-        for layer in layers:
-            self.add_layer(layer)
+        tiler = BackgroundTiler(width=width, height=height)
+        self.add_entity_to_layer(tiler, LayerType.BACKGROUND)

@@ -7,10 +7,7 @@ from core.component.input import InputParser
 from core.component.collision import CollisionBox
 from core.component.inventory import Inventory
 from core.component.properties import Properties
-from core import PHYSICS_TICK_TIME
 from common.sprites import SPRITES
-from common.constants import BASE_SPEED
-from utils import sign
 
 class Player(Entity):
     def __init__(self, x, y):
@@ -21,10 +18,6 @@ class Player(Entity):
         self.add_component(CollisionBox())
         self.add_component(Inventory())
         self.add_component(Properties())
-
-    def update(self):
-        # Update input state
-        self.input.update()
 
     def staging_update(self):
         if self.movement.moving:
@@ -38,6 +31,9 @@ class Player(Entity):
                 dy = 0
         if dy:
             success = self.movement.attempt_move(0, dy, self)
+
+    def update(self):
+        super().update()
 
     def fixed_update(self):
         super().fixed_update()

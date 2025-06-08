@@ -4,6 +4,7 @@ from core import update_timing
 from core.input import get_input_handler
 from core.debugger import Debugger
 from entities.background_tiler import BackgroundTiler
+from core.scene import BaseScene
 
 from core.level_parser import get_level
 
@@ -29,19 +30,15 @@ class Game:
             self.current_scene.update()
 
     def render(self):
+        dirty_rects = []
         if self.current_scene:
-            self.current_scene.render(self.screen)
+            dirty_rects = self.current_scene.render_group.draw(self.screen)
 
         self.debugger.render(self.screen)
-        pygame.display.flip()
-        # Clear screen again
-        self.screen.fill((0, 0, 0))
+        pygame.display.update(dirty_rects)
 
     def run(self):
         self.current_scene = get_level("assets/levels/lesson2.lvl")
-        tiler = BackgroundTiler(width=self.current_scene.width, height=self.current_scene.height)
-        self.current_scene.add_entity_to_layer(tiler, "background")
-
 
         while self.running:
             for event in pygame.event.get():
