@@ -14,7 +14,8 @@ def cleanup():
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((800, 600))
+        flags = pygame.DOUBLEBUF
+        self.screen = pygame.display.set_mode((800, 600), flags)
         self.running = True
         self.current_scene = None
 

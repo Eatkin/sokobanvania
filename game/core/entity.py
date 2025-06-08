@@ -1,3 +1,5 @@
+from core import PHYSICS_TICK_TIME
+
 class Entity:
     def __init__(self):
         self.components = {}
@@ -14,6 +16,19 @@ class Entity:
 
     def fixed_update(self):
         # Fixed updates every physics tick (e.g., 60 FPS)
+        # Movement handling
+        if hasattr(self, 'movement'):
+            self.position.xprevious = self.position.x
+            self.position.yprevious = self.position.y
+
+            if self.movement.moving:
+                dt = PHYSICS_TICK_TIME
+                self.movement.move_axis('x', dt)
+                self.movement.move_axis('y', dt)
+                if self.movement.check_target_reached():
+                    self.on_grid_snap()
+
+    def on_grid_snap(self):
         pass
 
     def draw(self, screen):

@@ -113,7 +113,7 @@ class Scene:
 
 class BaseScene(Scene):
     def __init__(self, width=800, height=600):
-        super().__init__(width=800, height=600)
+        super().__init__(width=width, height=height)
         # Create default layers
         layers = [
             Layer("background"),

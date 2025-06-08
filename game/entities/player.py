@@ -21,15 +21,13 @@ class Player(Entity):
         self.add_component(CollisionBox())
         self.add_component(Inventory())
         self.add_component(Properties())
-        self.speed = BASE_SPEED
-        self.moving = False
 
     def update(self):
         # Update input state
         self.input.update()
 
     def staging_update(self):
-        if self.moving:
+        if self.movement.moving:
             return
 
         dx = self.input.hinput
@@ -42,21 +40,10 @@ class Player(Entity):
             success = self.movement.attempt_move(0, dy, self)
 
     def fixed_update(self):
-        # Basically we want to propose all movement and then move, because otherwise we might end up with some weird
-        # Shit happening especially like, pushing multiple blocks in a row
-        # Update previous position
-        self.position.xprevious = self.position.x
-        self.position.yprevious = self.position.y
-        dt = PHYSICS_TICK_TIME
-
-        if self.moving:
-            self.update_sprite_direction()
-            self.move_axis('x', dt)
-            self.move_axis('y', dt)
-            if self.check_target_reached():
-                self.on_grid_snap()
-
+        super().fixed_update()
         self.continuous_collision()
+        # More complex handling for sprites later
+        self.update_sprite_direction()
 
     def on_grid_snap(self):
         # Check for collision with pickups
@@ -92,34 +79,6 @@ class Player(Entity):
             self.collision_box.collides_with.remove(to_remove.pop())
 
     def update_sprite_direction(self):
-        self.sprite.xflip = self.velocity.xspeed < 0
-
-    def move_axis(self, axis: str, dt: float):
-        speed = getattr(self.velocity, f"{axis}speed")
-        if speed == 0:
+        if self.velocity.xspeed == 0:
             return
-
-        pos = getattr(self.position, axis)
-        next_pos = pos + speed * dt
-        setattr(self.position, axis, next_pos)
-
-    def check_target_reached(self):
-        if self._reached_target():
-            self.position.x, self.position.y = self.position.target
-            self.velocity.xspeed = 0
-            self.velocity.yspeed = 0
-            self.moving = False
-            self.position.target = None
-            return True
-        return False
-
-    def _reached_target(self):
-        if sign(self.velocity.xspeed) == 1 and self.position.x >= self.position.target[0]:
-            return True
-        if sign(self.velocity.xspeed) == -1 and self.position.x <= self.position.target[0]:
-            return True
-        if sign(self.velocity.yspeed) == 1 and self.position.y >= self.position.target[1]:
-            return True
-        if sign(self.velocity.yspeed) == -1 and self.position.y <= self.position.target[1]:
-            return True
-        return False
+        self.sprite.xflip = self.velocity.xspeed < 0

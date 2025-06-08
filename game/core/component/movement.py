@@ -1,20 +1,25 @@
 from core.component.component import Component
 from core.component.position import Position
 from core.component.velocity import Velocity
-from common.constants import GRID_SIZE
+from common.constants import GRID_SIZE, BASE_SPEED
+from utils import sign
 
 # Wrapper class for Position and Velocity components together
 class Movement(Component):
-    def __init__(self, x=0, y=0, xspeed=0, yspeed=0):
+    def __init__(self, x=0, y=0, xspeed=0, yspeed=0, movement_speed=BASE_SPEED):
         super().__init__()
         self.position = Position(x, y)
-        self.velocity = Velocity(xspeed, yspeed)
+        self.velocity = Velocity(xspeed, yspeed, movement_speed)
+        self.moving = False
+        self.entity = None
 
     def attach(self, entity):
         self.position.attach(entity)
         self.velocity.attach(entity)
         entity.movement = self
+        self.entity = entity
 
+    # Utility functions
     def attempt_move(self, dx, dy, initiator):
         """
         Attempt to move the entity by dx, dy.
@@ -27,7 +32,7 @@ class Movement(Component):
         Returns:
             bool: True if the movement was successful, False otherwise.
         """
-        if initiator.moving:
+        if initiator.movement.moving:
             # If already moving, don't allow another move
             return False
 
@@ -52,10 +57,41 @@ class Movement(Component):
 
         # If we reach here, move
         initiator.position.target = (tx, ty)
-        initiator.velocity.xspeed = dx * initiator.speed
-        initiator.velocity.yspeed = dy * initiator.speed
-        initiator.moving = True
+        initiator.velocity.xspeed = dx * initiator.velocity.speed
+        initiator.velocity.yspeed = dy * initiator.velocity.speed
+        initiator.movement.moving = True
         # Set occupancy
         initiator.scene.vacate(initiator.position.x, initiator.position.y, initiator)
         initiator.scene.occupy(initiator.position.target[0], initiator.position.target[1], initiator)
         return True
+
+
+    def move_axis(self, axis: str, dt: float):
+        speed = getattr(self.entity.velocity, f"{axis}speed")
+        if speed == 0:
+            return
+
+        pos = getattr(self.entity.position, axis)
+        next_pos = pos + speed * dt
+        setattr(self.entity.position, axis, next_pos)
+
+    def check_target_reached(self):
+        if self._reached_target():
+            self.entity.position.x, self.entity.position.y = self.entity.position.target
+            self.entity.velocity.xspeed = 0
+            self.entity.velocity.yspeed = 0
+            self.entity.movement.moving = False
+            self.position.target = None
+            return True
+        return False
+
+    def _reached_target(self):
+        if sign(self.velocity.xspeed) == 1 and self.position.x >= self.position.target[0]:
+            return True
+        if sign(self.velocity.xspeed) == -1 and self.position.x <= self.position.target[0]:
+            return True
+        if sign(self.velocity.yspeed) == 1 and self.position.y >= self.position.target[1]:
+            return True
+        if sign(self.velocity.yspeed) == -1 and self.position.y <= self.position.target[1]:
+            return True
+        return False
