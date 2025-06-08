@@ -3,7 +3,7 @@ from core.component.component import Component
 from common.sprites import SpriteInfo
 from core import get_alpha
 
-class Sprite(Component, pygame.sprite.Sprite):
+class Sprite(Component, pygame.sprite.DirtySprite):
     """
     Component that represents a sprite for an entity.
     """
@@ -93,9 +93,16 @@ class Sprite(Component, pygame.sprite.Sprite):
                 self._last_xflip = False
 
         alpha = get_alpha()
-        x_draw = position.xprevious * (1 - alpha) + position.x * alpha
-        y_draw = position.yprevious * (1 - alpha) + position.y * alpha
-        self.rect.topleft = (x_draw, y_draw)
+        x_draw, y_draw = position.x, position.y
+        if position.xprevious != x_draw:
+            x_draw *= alpha
+            x_draw += position.xprevious * (1 - alpha)
+            self.dirty = True
+        if position.yprevious != y_draw:
+            y_draw *= alpha
+            y_draw += position.yprevious * (1 - alpha)
+            self.dirty = True
+        self.rect.topleft = (int(x_draw), int(y_draw))
 
     def attach(self, entity):
         """
@@ -106,6 +113,9 @@ class Sprite(Component, pygame.sprite.Sprite):
         """
         entity.sprite = self
         entity.components['sprite'] = self
+
+        # Initial update to set the position
+        self.update(entity.position)
 
 # Sprite Components to extend functionality
 class Xflip(Component):

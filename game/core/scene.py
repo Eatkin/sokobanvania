@@ -7,7 +7,7 @@ from entities.background_tiler import BackgroundTiler
 class Scene:
     def __init__(self, width=800, height=600):
         self.layers = {}
-        self.render_group = pygame.sprite.LayeredUpdates()
+        self.render_group = pygame.sprite.LayeredDirty()
         self.width = width
         self.height = height
         self.entities = []
@@ -42,9 +42,6 @@ class Scene:
 
         entity.scene = self
         self.entities.append(entity)
-        if entity.__class__.__name__ == 'DirtBlock':
-            print("Added entity", entity.__class__.__name__, "to layer", layer_ref)
-            print("It's scene is", entity.scene)
 
     def remove_entity(self, entity, destroy_entity=True):
         if hasattr(entity, 'sprite'):
@@ -112,3 +109,4 @@ class BaseScene(Scene):
         super().__init__(width=width, height=height)
         tiler = BackgroundTiler(width=width, height=height)
         self.add_entity_to_layer(tiler, LayerType.BACKGROUND)
+        self.background_surface = tiler.image

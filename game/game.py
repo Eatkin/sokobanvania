@@ -30,15 +30,23 @@ class Game:
             self.current_scene.update()
 
     def render(self):
-        dirty_rects = []
+        dirty_rects = None
         if self.current_scene:
+            background_surface = self.current_scene.background_surface
+            self.current_scene.render_group.clear(self.screen, background_surface)
             dirty_rects = self.current_scene.render_group.draw(self.screen)
 
-        self.debugger.render(self.screen)
+        if dirty_rects:
+            print(f"Dirty Rects: {dirty_rects}")
+
         pygame.display.update(dirty_rects)
 
     def run(self):
         self.current_scene = get_level("assets/levels/lesson2.lvl")
+
+        self.screen.blit(self.current_scene.background_surface, (0, 0))
+        self.current_scene.render_group.draw(self.screen)
+        pygame.display.flip()
 
         while self.running:
             for event in pygame.event.get():
