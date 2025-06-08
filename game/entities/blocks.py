@@ -1,12 +1,11 @@
-from core import PHYSICS_TICK_TIME
 from core.entity import Entity
+from entities.tiles import WaterTile, DirtTile
 from core.component.position import Position
 from core.component.movement import Movement
 from core.component.sprite import Sprite
 from core.component.collision import CollisionBox
+from core.layer import LayerType
 from common.sprites import SPRITES
-from common.constants import BASE_SPEED
-from utils import sign
 
 class Solid(Entity):
     def __init__(self, x, y, sprite_info, components=None):
@@ -65,3 +64,15 @@ class DirtBlock(Entity):
         self.add_component(Movement(x, y))
         self.add_component(Sprite(sprite_info))
         self.add_component(CollisionBox())
+
+    def on_grid_snap(self):
+        collisions = [WaterTile]
+        collides_with = self.collision_box.instance_meeting_all(self.position.x, self.position.y, collisions)
+        for c in collides_with:
+            if isinstance(c, WaterTile):
+                # Kill self, kill water and create a dirt tile in its place
+                dirt = DirtTile(self.position.x, self.position.y)
+                self.scene.add_entity_to_layer(dirt, LayerType.BACKGROUND)
+                self.destroy()
+                c.destroy()
+                return

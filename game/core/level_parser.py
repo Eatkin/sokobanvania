@@ -2,6 +2,7 @@ import os
 from entities.player import Player
 from entities.pickup import PickUp
 from entities.blocks import Block, GreenLockBlock, RedLockBlock, BlueLockBlock, YellowLockBlock, DirtBlock
+from entities.tiles import DirtTile, WaterTile
 from common.constants import GRID_SIZE
 from core.scene import BaseScene
 from core.layer import LayerType
@@ -22,6 +23,7 @@ legend = {
     'R': lambda x, y: RedLockBlock(x * GRID_SIZE, y * GRID_SIZE),
     'B': lambda x, y: BlueLockBlock(x * GRID_SIZE, y * GRID_SIZE),
     'D': lambda x, y: DirtBlock(x * GRID_SIZE, y * GRID_SIZE),
+    'w': lambda x, y: WaterTile(x * GRID_SIZE, y * GRID_SIZE),
 }
 
 layers = {
@@ -38,6 +40,7 @@ layers = {
     'R': LayerType.GAME,
     'B': LayerType.GAME,
     'D': LayerType.GAME,
+    'w': LayerType.BACKGROUND,
 }
 
 def get_level(path):

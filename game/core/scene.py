@@ -34,13 +34,17 @@ class Scene:
             entity.sprite._layer = layer_ref.value
             self.render_group.add(entity.sprite)
             entity.sprite.render_group = self.render_group
-        entity.scene = self
-        self.entities.append(entity)
 
         # Add to the occupancy map if the entity has a position
         if hasattr(entity, 'position'):
             x, y = entity.position.x, entity.position.y
             self.occupy(x, y, entity)
+
+        entity.scene = self
+        self.entities.append(entity)
+        if entity.__class__.__name__ == 'DirtBlock':
+            print("Added entity", entity.__class__.__name__, "to layer", layer_ref)
+            print("It's scene is", entity.scene)
 
     def remove_entity(self, entity, destroy_entity=True):
         if hasattr(entity, 'sprite'):

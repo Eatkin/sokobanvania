@@ -1,6 +1,7 @@
 from core.entity import Entity
 from entities.pickup import PickUp
 from entities.blocks import LockBlock
+from entities.tiles import DirtTile
 from core.component.movement import Movement
 from core.component.sprite import Sprite, Xflip
 from core.component.input import InputParser
@@ -42,20 +43,23 @@ class Player(Entity):
         self.update_sprite_direction()
 
     def on_grid_snap(self):
-        # Check for collision with pickups
-        collisions = [PickUp, LockBlock]
+        # Check for collision with pickups etc
+        collisions = [PickUp, LockBlock, DirtTile]
         items = self.collision_box.instance_meeting_all(self.position.x, self.position.y, collisions)
         for item in items:
             if isinstance(item, PickUp):
                 self.inventory.add(item.name)
                 print(f"Picked up item: {item.name}")
                 item.destroy()
-            if isinstance(item, LockBlock):
+            elif isinstance(item, LockBlock):
                 unlocks_with = item.item_required
                 if self.inventory.has(unlocks_with):
                     self.inventory.remove(unlocks_with)
                     item.destroy()
                     print(f"Unlocked {item.__class__.__name__} with {unlocks_with}")
+            elif isinstance(item, DirtTile):
+                # Dirt tiles are converted to regular so just delete it
+                item.destroy()
 
     def continuous_collision(self):
         # Handle any continuously required collision checks here e.g. monsters

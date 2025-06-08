@@ -26,7 +26,15 @@ SPRITES = {
         "wall_tile": SpriteInfo(
             path="assets/tiles/wall.png",
             alpha_channel=False
-        )
+        ),
+        "water_tile": SpriteInfo(
+            path="assets/tiles/water_tile.png",
+            alpha_channel=False
+        ),
+        "dirt_tile": SpriteInfo(
+            path="assets/tiles/dirt_tile.png",
+            alpha_channel=False
+        ),
     },
     "items": {
         "green_key": SpriteInfo(
